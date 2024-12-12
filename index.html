@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Kitoblar Do‘koni</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header, footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        .container {
+            padding: 20px;
+            text-align: center;
+        }
+        .book-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .book {
+            background-color: white;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            width: 150px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .book:hover {
+            transform: scale(1.05);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        button {
+            padding: 0.5rem;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .hidden {
+            display: none;
+        }
+        .search-bar {
+            margin: 20px 0;
+        }
+        .price {
+            color: green;
+            font-weight: bold;
+        }
+        #addBookForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #addBookForm input {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        #addBookForm button {
+            background-color: #4CAF50;
+        }
+        #bookContent {
+            text-align: left;
+            margin: 20px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Online Kitoblar Do‘koni</h1>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showPage('home');" style="color:white;">Bosh sahifa</a></li>
+                <li><a href="#" onclick="showPage('categories');" style="color:white;">Kategoriyalar</a></li>
+                <li><a href="https://books.google.com" target="_blank" style="color:white;">Google Books</a></li>
+                <li><a href="https://www.amazon.com" target="_blank" style="color:white;">Amazon</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container" id="home">
+        <h2>Yangi va Mashhur Kitoblar</h2>
+        <input type="text" id="search" class="search-bar" placeholder="Izlash..." oninput="searchBooks()">
+        <div class="book-list" id="bookList">
+            <!-- Kitoblar ro'yxati bu yerda joylashtiriladi -->
+        </div>
+
+        <!-- Yangi kitob qo'shish formasi -->
+        <div id="addBookForm">
+            <h3>Yangi kitob qo‘shing</h3>
+            <input type="text" id="bookTitle" placeholder="Kitob nomi">
+            <input type="text" id="bookAuthor" placeholder="Muallif">
+            <input type="text" id="bookDescription" placeholder="Kitob tavsifi">
+            <input type="text" id="bookImage" placeholder="Kitob rasm linki">
+            <input type="text" id="bookPrice" placeholder="Kitob narxi (so'm)">
+            <input type="text" id="bookLanguage" placeholder="Til">
+            <button onclick="addBook()">Kitob qo'shish</button>
+        </div>
+
+        <div id="bookInfo" class="hidden"></div>
+        <div id="bookContent" class="hidden"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Online Kitoblar Do‘koni. Barcha huquqlar himoyalangan.</p>
+    </footer>
+
+    <script>
+        let books = [
+            { title: "The Great Gatsby", author: "F. Scott Fitzgerald", description: "A story about the mysterious Jay Gatsby and his love for Daisy Buchanan.", img: "https://covers.openlibrary.org/b/id/10213031-L.jpg", price: "75 000 so'm", language: "Ingliz", content: "The full text of The Great Gatsby..." },
+            { title: "O'tgan kunlar", author: "Abdulla Qodiriy", description: "O'zbek adabiyotining klassik asari.", img: "https://covers.openlibrary.org/b/id/10348700-L.jpg", price: "50 000 so'm", language: "O'zbek", content: "The full text of O'tgan kunlar..." },
+            { title: "Anna Karenina", author: "Lev Tolstoy", description: "Rus adabiyotining mashhur romanlaridan biri.", img: "https://covers.openlibrary.org/b/id/10489012-L.jpg", price: "95 000 so'm", language: "Rus", content: "The full text of Anna Karenina..." },
+            // Qo'shimcha kitoblar qo'shing...
+        ];
+
+        function showPage(page) {
+            // Barcha sahifalarni yashirish
+            document.querySelectorAll('.container').forEach((el) => {
+                el.classList.add('hidden');
+            });
+            // Tanlangan sahifani ko'rsatish
+            document.getElementById(page).classList.remove('hidden');
+            if (page === 'home') {
+                loadBooks();
+            }
+        }
+
+        function loadBooks() {
+            const bookList = document.getElementById("bookList");
+            bookList.innerHTML = ''; // Kitoblar ro'yxatini tozalash
+            books.forEach((book, index) => {
+                const bookDiv = document.createElement("div");
+                bookDiv.className = "book";
+                bookDiv.onclick = () => showBookInfo(index);
+                bookDiv.innerHTML = `
+                    <img src="${book.img}" alt="${book.title}">
+                    <h3>${book.title}</h3>
+                    <p>Muallif: ${book.author}</p>
+                    <p class="price">Narxi: ${book.price}</p>
+                    <p>Til: ${book.language}</p>
+                `;
+                bookList.appendChild(bookDiv);
+            });
+        }
+
+        function searchBooks() {
+            const searchInput = document.getElementById("search").value.toLowerCase();
+            const filteredBooks = books.filter(book => 
+                book.title.toLowerCase().includes(searchInput) || 
+                book.author.toLowerCase().includes(searchInput)
+            );
+            const bookList = document.getElementById("bookList");
+            bookList.innerHTML = ''; // Kitoblar ro'yxatini tozalash
+            filteredBooks.forEach((book, index) => {
+                const bookDiv = document.createElement("div");
+                bookDiv.className = "book";
+                bookDiv.onclick = () => showBookInfo(index);
+                bookDiv.innerHTML = `
+                    <img src="${book.img}" alt="${book.title}">
+                    <h3>${book.title}</h3>
+                    <p>Muallif: ${book.author}</p>
+                    <p class="price">Narxi: ${book.price}</p>
+                    <p>Til: ${book.language}</p>
+                `;
+                bookList.appendChild(bookDiv);
+            });
+        }
+
+        function showBookInfo(index) {
+            const book = books[index];
+            const bookInfo = document.getElementById("bookInfo");
+            const bookContent = document.getElementById("bookContent");
+            bookInfo.innerHTML = `
+                <h3>${book.title}</h3>
+                <p><strong>Muallif:</strong> ${book.author}</p>
+                <p><strong>Tavsif:</strong> ${book.description}</p>
+                <p class="price"><strong>Narxi:</strong> ${book.price}</p>
+                <p><strong>Til:</strong> ${book.language}</p>
+                <button onclick="alert('Buyurtma berildi: ${book.title}');">Buyurtma berish</button>
+                <button onclick="readBook(${index})">Kitobni o'qish</button>
+                <button onclick="closeBookInfo()">Yopish</button>
+            `;
+            bookInfo.classList.remove('hidden');
+        }
+
+        function closeBookInfo() {
+            document.getElementById("bookInfo").classList.add('hidden');
+            document.getElementById("bookContent").classList.add('hidden');
+        }
+
+        function addBook() {
+            const title = document.getElementById("bookTitle").value;
+            const author = document.getElementById("bookAuthor").value;
+            const description = document.getElementById("bookDescription").value;
+            const img = document.getElementById("bookImage").value;
+            const price = document.getElementById("bookPrice").value;
+            const language = document.getElementById("bookLanguage").value;
+
+            const newBook = { title, author, description, img, price, language, content: "New Book Content..." };
+            books.push(newBook);
+            loadBooks();
+        }
+
+        function readBook(index) {
+            const book = books[index];
+            const bookContent = document.getElementById("bookContent");
+            bookContent.innerHTML = `<h3>${book.title}</h3><p>${book.content}</p>`;
+            bookContent.classList.remove('hidden');
+        }
+
+        window.onload = () => {
+            loadBooks();
+        };
+    </script>
+
+</body>
+</html>
